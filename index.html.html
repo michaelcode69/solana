@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOBU — The Solana Dog</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/framer-motion/dist/framer-motion.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide-react@latest/dist/umd/lucide-react.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --dobu-bg: #f1e0c9;
+        --dobu-dark: #1a120a;
+        --dobu-accent: #16ffbd;
+        --dobu-accent-2: #8b5cf6;
+        --dobu-yellow: #ffd84d;
+      }
+      body { margin:0; background: var(--dobu-bg); font-family:'Space Grotesk',sans-serif; }
+      .dobu-bg { background: var(--dobu-bg); min-height:100vh; }
+      @keyframes vibrate {0%{transform:translate(0) rotate(0);}20%{transform:translate(-1px,1px) rotate(-0.5deg);}40%{transform:translate(1px,-1px) rotate(0.4deg);}60%{transform:translate(-1px,0) rotate(-0.6deg);}80%{transform:translate(1px,1px) rotate(0.6deg);}100%{transform:translate(0) rotate(0);}}
+      .vibrate {animation:vibrate .18s linear infinite;}
+      .neon {text-shadow:0 0 8px var(--dobu-accent),0 0 24px var(--dobu-accent);}
+      .pixel {font-family:'Press Start 2P',cursive;letter-spacing:1px;}
+      .grotesk {font-family:'Space Grotesk',sans-serif;}
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState,useEffect,useMemo } = React;
+      const { motion } = window["framer-motion"];
+      const { Twitter, Send, ArrowUpRight } = window.lucideReact;
+
+      function useCountdown(targetDateStr) {
+        const target = useMemo(()=> new Date(targetDateStr).getTime(), [targetDateStr]);
+        const [timeLeft,setTimeLeft] = useState(target - Date.now());
+        useEffect(()=>{ const id=setInterval(()=>setTimeLeft(target - Date.now()),1000); return ()=>clearInterval(id);},[target]);
+        const total = Math.max(0,timeLeft);
+        const days=Math.floor(total/(1000*60*60*24));
+        const hours=Math.floor((total/(1000*60*60))%24);
+        const minutes=Math.floor((total/(1000*60))%60);
+        const seconds=Math.floor((total/1000)%60);
+        return {days,hours,minutes,seconds};
+      }
+
+      function format2(n){return String(n).padStart(2,'0');}
+
+      function DobuLanding(){
+        const year=new Date().getFullYear();
+        const {days,hours,minutes,seconds}=useCountdown(\`\${year}-08-26T00:00:00Z\`);
+        const SUPPLY=1000000000;
+        const tokenomics=[{name:'Community',pct:18,color:'#16ffbd'},{name:'Team',pct:2,color:'#8b5cf6'},{name:'Liquidity',pct:80,color:'#ffd84d'}];
+        const r=80; const C=2*Math.PI*r;
+        let accPct=0;
+        const segments=tokenomics.map(t=>{const seg={...t,amount:Math.round((t.pct/100)*SUPPLY),len:(t.pct/100)*C,offset:(accPct/100)*C};accPct+=t.pct;return seg;});
+
+        return (<div className="dobu-bg p-6">
+          <h1 className="pixel" style={{fontSize:'24px'}}>DOBU — THE SOLANA DOG</h1>
+          <h2 className="grotesk" style={{fontSize:'36px'}}>Launch in {format2(days)}d:{format2(hours)}h:{format2(minutes)}m:{format2(seconds)}s</h2>
+          <div style={{marginTop:'20px'}}>
+            <a href="https://x.com/DobuSolana" target="_blank" className="vibrate" style={{padding:'10px 20px',background:'var(--dobu-accent)',borderRadius:'12px',marginRight:'10px',display:'inline-block'}}>Follow on X</a>
+            <a href="https://t.me/DobuChat" target="_blank" style={{padding:'10px 20px',background:'black',color:'white',borderRadius:'12px',display:'inline-block'}}>Join Telegram</a>
+          </div>
+
+          <div style={{marginTop:'40px'}}>
+            <img src="https://i.ibb.co/KzjbSvKz/Chat-GPT-Image-Aug-17-2025-04-57-56-PM.png" alt="Dobu Mascot" style={{maxHeight:'300px',borderRadius:'20px'}}/>
+          </div>
+
+          <div style={{marginTop:'60px'}}>
+            <h3 className="pixel" style={{fontSize:'20px'}}>TOKENOMICS</h3>
+            <div style={{display:'flex',gap:'40px',alignItems:'center',flexWrap:'wrap',marginTop:'20px'}}>
+              <svg width="220" height="220" viewBox="0 0 220 220">
+                <g transform="translate(110,110) rotate(-90)">
+                  <circle r={r} cx="0" cy="0" fill="none" stroke="#00000010" strokeWidth="26" />
+                  {segments.map((s,i)=>(<circle key={i} r={r} cx="0" cy="0" fill="none" stroke={s.color} strokeWidth="26" strokeDasharray={\`\${s.len} \${C-s.len}\`} strokeDashoffset={-s.offset}/>))}
+                </g>
+              </svg>
+              <div>
+                {segments.map(s=>(<div key={s.name} style={{marginBottom:'8px'}}><span style={{display:'inline-block',width:'12px',height:'12px',background:s.color,marginRight:'8px'}}></span>{s.name} - {s.pct}% ({s.amount.toLocaleString()})</div>))}
+                <div style={{marginTop:'10px',fontWeight:'bold'}}>Total Supply: {SUPPLY.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>);
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<DobuLanding/>);
+    </script>
+  </body>
+</html>
